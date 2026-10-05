@@ -200,6 +200,20 @@ header.band{background:var(--hero);border-radius:6px;padding:22px 20px;margin-to
 .linkbtn{font:inherit;font-size:13px;background:none;border:0;color:var(--accent);text-decoration:underline;cursor:pointer;padding:0}
 .hlogo{background:#fff;border-radius:16px;padding:10px 14px;justify-self:start;display:block}
 .hlogo img{display:block;max-height:150px;width:auto}
+@media print{
+ @page{size:A4;margin:12mm}
+ html,body{background:#fff!important}
+ *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;animation:none!important;box-shadow:none!important}
+ .topbar,#hBox,.tape,#ficha,#quiz,#panel,.overlay,.toast,textarea.fallback{display:none!important}
+ .wrap{max-width:none!important;padding:0!important;margin:0!important}
+ .grid{display:block!important}
+ .report{display:block!important}
+ #informe>.card{margin:0 0 10px!important;padding:16px!important}
+ #informe>.card.hero,.look,.avoid,.capsule>div,li,.shadow,.mq-big{break-inside:avoid;page-break-inside:avoid}
+ h3,h4{break-after:avoid;page-break-after:avoid}
+ #informe{display:block!important}
+ #credito{display:block!important;margin-top:10px}
+}
 </style>
 
 <style>[hidden]{display:none!important}img{max-width:100%}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style>
@@ -345,6 +359,7 @@ header.band{background:var(--hero);border-radius:6px;padding:22px 20px;margin-to
     <button type="button" class="btn ghost" id="nueva">Nueva ficha</button>
   </div>
   <div class="actions">
+    <button type="button" class="btn" id="pdf">Guardar PDF</button>
     <button type="button" class="btn ghost" id="copiar">Copiar informe</button>
     <button type="button" class="btn ghost" id="verInforme">Ver informe ↓</button>
   </div>
@@ -377,7 +392,7 @@ header.band{background:var(--hero);border-radius:6px;padding:22px 20px;margin-to
 <script src="vendor/supabase.js"></script>
 <script>
 /*BRAND_START*/
-const BRAND={"appName": "María Isabel Sosa · Imagen", "marca": "María Isabel Sosa", "subtitulo": "Asesora y Coach en Imagen", "eyebrow": "Imagen, autoconocimiento y presencia", "titulo": "Ficha de <em>imagen y estilo</em>", "lede": "Completá la ficha y el informe se arma al instante: paleta personal, prendas y texturas según el arquetipo, cortes según el cuerpo, ajustes por edad, combinaciones y armario cápsula. Una imagen coherente entre lo interno y lo externo.", "slogan": "No te dejes para después", "logoBarra": "brand/icono-barra.png", "logoInforme": "brand/logo-informe.png", "colores": {"accent": "#B00E0D", "accentSoft": "#EFEBFC", "bg": "#FAFAFA", "surface": "#FFFFFF", "ink": "#1A1A1A", "muted": "#5C5766", "line": "#E2DDF0", "hero": "#E4DEFA", "ok": "#2F6B4F", "warn": "#B00E0D"}, "fuentes": {"display": "\"Playfair Display\", Georgia, Cambria, serif", "body": "Arial, Helvetica, sans-serif", "script": "\"Alex Brush\", \"Playfair Display\", cursive"}, "soloClaro": true, "reemplazos": [["looks", "combinaciones"], ["look", "conjunto"], ["lookbook", "guía"]], "contacto": {"whatsapp": "", "instagram": "@mariaisabel.imagen", "web": "www.mariaisabelimagen.com.ar"}, "firmaInforme": "Informe preparado por María Isabel Sosa · Asesora y Coach en Imagen", "credito": "", "supabase": {"url": "https://kufponrnfwxwaakuzgfz.supabase.co", "key": "sb_publishable_TDQbmeAvpbJBHnrIeD3qyg_BHaoBpyb", "tabla": "app_fichas"}, "logoCabecera": "brand/logo-informe.png"};
+const BRAND={"appName": "María Isabel Sosa · Imagen", "marca": "María Isabel Sosa", "subtitulo": "Asesora y Coach en Imagen", "eyebrow": "Imagen, autoconocimiento y presencia", "titulo": "Ficha de <em>imagen y estilo</em>", "lede": "Completá la ficha y el informe se arma al instante: paleta personal, prendas y texturas según el arquetipo, cortes según el cuerpo, ajustes por edad, combinaciones y armario cápsula. Una imagen coherente entre lo interno y lo externo.", "slogan": "No te dejes para después", "logoBarra": "brand/icono-barra.png", "logoInforme": "brand/logo-informe.png", "colores": {"accent": "#B00E0D", "accentSoft": "#EFEBFC", "bg": "#FAFAFA", "surface": "#FFFFFF", "ink": "#1A1A1A", "muted": "#5C5766", "line": "#E2DDF0", "hero": "#E4DEFA", "ok": "#2F6B4F", "warn": "#B00E0D"}, "fuentes": {"display": "\"Playfair Display\", Georgia, Cambria, serif", "body": "Arial, Helvetica, sans-serif", "script": "\"Alex Brush\", \"Playfair Display\", cursive"}, "soloClaro": true, "reemplazos": [["looks sugeridos", "combinaciones sugeridas"], ["looks", "combinaciones"], ["look", "conjunto"], ["lookbook", "guía"]], "contacto": {"whatsapp": "", "instagram": "@mariaisabel.imagen", "web": "www.mariaisabelimagen.com.ar"}, "firmaInforme": "Informe preparado por María Isabel Sosa · Asesora y Coach en Imagen", "credito": "", "supabase": {"url": "https://kufponrnfwxwaakuzgfz.supabase.co", "key": "sb_publishable_TDQbmeAvpbJBHnrIeD3qyg_BHaoBpyb", "tabla": "app_fichas"}, "logoCabecera": "brand/logo-informe.png"};
 /*BRAND_END*/
 function applyBrand(){
  const B=BRAND, el=id=>document.getElementById(id);
@@ -752,6 +767,15 @@ const PAL_M={
  "Invierno brillante":[["Azul eléctrico","#0055FF"],["Cobalto","#0047AB"],["Esmeralda brillante","#009B77"],["Verde pino brillante","#007A5E"],["Rojo cereza","#D2042D"],["Violeta profundo","#5A189A"],["Gris acero","#5F6B7A"],["Turquesa intenso","#00B7C7"],["Menta helado","#A8F0D8"],["Azul hielo","#D6ECF5"]],
  "Invierno profundo":[["Azul tinta","#1B2A4A"],["Azul noche","#142039"],["Verde botella","#0B4F3C"],["Esmeralda oscuro","#046307"],["Rojo vino","#8B0A1A"],["Burdeos","#6D1A36"],["Pizarra","#3B4252"],["Petróleo frío","#0F4C5C"],["Ciruela","#4B1E3F"],["Berenjena","#3E1F47"]]
 };
+const NO_M={
+ "Primavera cálida":[["Negro","#111111"],["Gris frío","#8C939B"],["Burdeos frío","#7A1F3D"],["Azul hielo","#CFE8F5"]],
+ "Verano suave":[["Negro","#111111"],["Blanco puro","#FFFFFF"],["Naranja brillante","#FF7A00"],["Amarillo limón","#F4E04D"]],
+ "Otoño suave":[["Negro","#111111"],["Blanco puro","#FFFFFF"],["Azul eléctrico","#0055FF"],["Gris frío","#8C939B"]],
+ "Otoño cálido":[["Negro","#111111"],["Gris frío","#8C939B"],["Celeste pastel","#BFD9F2"],["Azul hielo","#CFE8F5"]],
+ "Otoño profundo":[["Celeste pálido","#CFE8F5"],["Menta pastel","#CDEFE0"],["Amarillo pastel","#F7EFA0"],["Gris plata","#C0C0C0"]]
+};
+const D_M={"Verano frío":"Fresca, de subtono frío y elegante.","Primavera clara":"Luminosa, cálida y suave."};
+const neuM=n=>n.map(x=>x[0]==="Rosa beige"?["Beige frío","#D6CEC4"]:x);
 const ORDER_M={inocente:[0,2,8],huerfano:[1,3,6],guerrero:[5,1,4],bienhechor:[2,6,0],amante:[4,5,1],destructor:[5,4,1],sabio:[1,3,5],mago:[5,3,0],soberano:[1,5,4],bufon:[4,2,0],explorador:[3,2,6],creador:[4,2,0]};
 const COLOR_M={amante:"Los tonos más ricos y profundos de tu paleta: rojos vino, burdeos, ciruelas y azules intensos.",bufon:"Los tonos más vivos de tu paleta en prendas puntuales (camisa, medias, zapatillas) sobre una base neutra.",inocente:"Los tonos claros y luminosos de tu paleta, con blanco o crudo como base."};
 const ALTURA = {
@@ -841,7 +865,7 @@ function render(){
  // colores para looks según arquetipo
  const order={inocente:[9,0,7],huerfano:[6,4,2],guerrero:[0,5,4],bienhechor:[1,2,8],amante:[0,1,3],destructor:[5,6,0],sabio:[8,6,9],mago:[3,6,7],soberano:[5,7,4],bufon:[1,3,6],explorador:[4,6,5],creador:[1,6,4]}[A.base||$("arq1").value];
  const male=g==="m", best=male&&PAL_M[sKey]?PAL_M[sKey]:P.best, baseK=A.base||$("arq1").value;
- const cs=(male?ORDER_M[baseK]||[0,2,4]:order).map(i=>best[i]); const ns=[P.neu[3],P.neu[1],P.neu[0]];
+ const noC=male&&NO_M[sKey]?NO_M[sKey]:P.no, neuC=male?neuM(P.neu):P.neu, dC=male&&D_M[sKey]?D_M[sKey]:P.d; const cs=(male?ORDER_M[baseK]||[0,2,4]:order).map(i=>best[i]); const ns=[neuC[3],neuC[1],neuC[0]];
  const lk=s=>s.replace(/\{c(\d)\}/g,(_,i)=>cs[i-1][0].toLowerCase()).replace(/\{n(\d)\}/g,(_,i)=>ns[i-1][0].toLowerCase());
  const occ=["Trabajo","Fin de semana","Evento"];
  const dotsFor=(s)=>{const out=[];s.replace(/\{([cn])(\d)\}/g,(_,t,i)=>{out.push((t==="c"?cs:ns)[i-1][1])});return out;};
@@ -869,10 +893,10 @@ function render(){
 
  <section class="card">
   <h3>Paleta personal</h3>
-  <p class="sub">${esc(sKey)}: ${esc(P.d)} ${$("estacion").value==="auto"?"Calculada a partir de ojos, pelo, piel y subtono; conviene confirmarla con prueba de telas frente al rostro.":""}</p>
+  <p class="sub">${esc(sKey)}: ${esc(dC)} ${$("estacion").value==="auto"?"Calculada a partir de ojos, pelo, piel y subtono; conviene confirmarla con prueba de telas frente al rostro.":""}</p>
   <h4>Tus mejores colores${male?" (paleta masculina)":""}</h4>${sw(best)}
-  <h4>Neutros base</h4>${sw(P.neu)}
-  <div class="avoid"><h4>Lejos del rostro</h4>${sw(P.no)}</div>
+  <h4>Neutros base</h4>${sw(neuC)}
+  <div class="avoid"><h4>Lejos del rostro</h4>${sw(noC)}</div>
   <p class="sub" style="margin-top:12px"><b>Para tu arquetipo:</b> ${esc(male&&COLOR_M[baseK]?COLOR_M[baseK]:A.color)}</p>
  </section>
 
@@ -921,7 +945,7 @@ function render(){
  lastText=[`INFORME DE ESTILO${nombre?" — "+nombre:""}`,
   `${A.n}${B?" + "+B.n:""} · ${A.estilo} · Estación: ${sKey} · Cuerpo: ${C.n} · Edad: ${edadTxt} · Altura: ${altTxt}`,
   ``,`ESENCIA: ${gx(A,"esencia")}`,``,
-  `PALETA (${sKey}) — ${P.d}`,`Mejores colores: ${best.map(x=>x[0]).join(", ")}`,`Neutros: ${P.neu.map(x=>x[0]).join(", ")}`,`Evitar cerca del rostro: ${P.no.map(x=>x[0]).join(", ")}`,`Metal: ${P.metal}`,`Para tu arquetipo: ${A.color}`,``,
+  `PALETA (${sKey}) — ${dC}`,`Mejores colores: ${best.map(x=>x[0]).join(", ")}`,`Neutros: ${neuC.map(x=>x[0]).join(", ")}`,`Evitar cerca del rostro: ${noC.map(x=>x[0]).join(", ")}`,`Metal: ${P.metal}`,`Para tu arquetipo: ${A.color}`,``,
   `PRENDAS FIRMA: ${prendas.join("; ")}`,`TELAS: ${gx(A,"telas").join(", ")}`,`ESTAMPADOS: ${gx(A,"est").join(", ")}`,`ACCESORIOS: ${gx(A,"acc").join(", ")}`,
   B?`TOQUE ${B.n.toUpperCase()}: ${toques.join("; ")}`:"",`SOMBRA A CUIDAR: ${gx(A,"sombra")}`,``,
   `CORTES (${C.n}) — ${C.obj}`,`Arriba: ${C.arriba.join("; ")}`,`Abajo: ${C.abajo.join("; ")}`,`Conjuntos: ${C.vest.join("; ")}`,`Evitar: ${C.no.join("; ")}`,`Altura: ${(g==="m"?ALTURA_M:ALTURA)[alt].join("; ")}`,``,
@@ -935,6 +959,15 @@ $("copiar").addEventListener("click",()=>{
  if(!lastText){toast("Completá la ficha primero");return;}
  const fb=()=>{let ta=document.querySelector("textarea.fallback");if(!ta){ta=document.createElement("textarea");ta.className="fallback";ta.setAttribute("aria-label","Texto del informe");$("ficha").appendChild(ta);}ta.value=lastText;ta.select();toast("Seleccioná y copiá el texto");};
  try{navigator.clipboard.writeText(lastText).then(()=>toast("Informe copiado"),fb);}catch(e){fb();}
+});
+$("pdf").addEventListener("click",()=>{
+ if(!lastText){toast("Completá la ficha primero");return;}
+ const t0=document.title, n=$("nombre").value.trim();
+ document.title=`Informe de estilo${n?" - "+n:""}`;
+ const back=()=>{document.title=t0;window.removeEventListener("afterprint",back);};
+ window.addEventListener("afterprint",back); setTimeout(back,60000);
+ toast("Elegí «Guardar como PDF» en la ventana que se abre");
+ setTimeout(()=>window.print(),300);
 });
 $("verInforme").addEventListener("click",()=>$("informe").scrollIntoView({behavior:"smooth"}));
 document.querySelectorAll('input[name=genero]').forEach(r=>r.addEventListener("change",()=>{if(typeof quizEl!=="undefined"&&!quizEl.hidden){Q={mode:null,i:0,ans:[]};drawQuiz();}const map={reloj:"trapecio",trapecio:"reloj"};fillCuerpo(map[$("cuerpo").value]||$("cuerpo").value);render();}));
