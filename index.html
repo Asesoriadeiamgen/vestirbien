@@ -374,9 +374,10 @@ header.band{background:var(--hero);border-radius:6px;padding:22px 20px;margin-to
 <p class="foot">Las recomendaciones son orientativas: una asesora de imagen las ajusta a la persona real, su contexto y su gusto.</p>
 </div>
 
+<script src="vendor/supabase.js"></script>
 <script>
 /*BRAND_START*/
-const BRAND={"appName": "María Isabel Sosa · Imagen", "marca": "María Isabel Sosa", "subtitulo": "Asesora y Coach en Imagen", "eyebrow": "Imagen, autoconocimiento y presencia", "titulo": "Ficha de <em>imagen y estilo</em>", "lede": "Completá la ficha y el informe se arma al instante: paleta personal, prendas y texturas según el arquetipo, cortes según el cuerpo, ajustes por edad, combinaciones y armario cápsula. Una imagen coherente entre lo interno y lo externo.", "slogan": "No te dejes para después", "logoBarra": "brand/icono-barra.png", "logoInforme": "brand/logo-informe.png", "colores": {"accent": "#B00E0D", "accentSoft": "#EFEBFC", "bg": "#FAFAFA", "surface": "#FFFFFF", "ink": "#1A1A1A", "muted": "#5C5766", "line": "#E2DDF0", "hero": "#E4DEFA", "ok": "#2F6B4F", "warn": "#B00E0D"}, "fuentes": {"display": "\"Playfair Display\", Georgia, Cambria, serif", "body": "Arial, Helvetica, sans-serif", "script": "\"Alex Brush\", \"Playfair Display\", cursive"}, "soloClaro": true, "reemplazos": [["looks", "combinaciones"], ["look", "conjunto"], ["lookbook", "guía"]], "contacto": {"whatsapp": "", "instagram": "@mariaisabel.imagen", "web": "www.mariaisabelimagen.com.ar"}, "firmaInforme": "Informe preparado por María Isabel Sosa · Asesora y Coach en Imagen", "credito": "", "logoCabecera": "brand/logo-informe.png"};
+const BRAND={"appName": "María Isabel Sosa · Imagen", "marca": "María Isabel Sosa", "subtitulo": "Asesora y Coach en Imagen", "eyebrow": "Imagen, autoconocimiento y presencia", "titulo": "Ficha de <em>imagen y estilo</em>", "lede": "Completá la ficha y el informe se arma al instante: paleta personal, prendas y texturas según el arquetipo, cortes según el cuerpo, ajustes por edad, combinaciones y armario cápsula. Una imagen coherente entre lo interno y lo externo.", "slogan": "No te dejes para después", "logoBarra": "brand/icono-barra.png", "logoInforme": "brand/logo-informe.png", "colores": {"accent": "#B00E0D", "accentSoft": "#EFEBFC", "bg": "#FAFAFA", "surface": "#FFFFFF", "ink": "#1A1A1A", "muted": "#5C5766", "line": "#E2DDF0", "hero": "#E4DEFA", "ok": "#2F6B4F", "warn": "#B00E0D"}, "fuentes": {"display": "\"Playfair Display\", Georgia, Cambria, serif", "body": "Arial, Helvetica, sans-serif", "script": "\"Alex Brush\", \"Playfair Display\", cursive"}, "soloClaro": true, "reemplazos": [["looks", "combinaciones"], ["look", "conjunto"], ["lookbook", "guía"]], "contacto": {"whatsapp": "", "instagram": "@mariaisabel.imagen", "web": "www.mariaisabelimagen.com.ar"}, "firmaInforme": "Informe preparado por María Isabel Sosa · Asesora y Coach en Imagen", "credito": "", "supabase": {"url": "https://kufponrnfwxwaakuzgfz.supabase.co", "key": "sb_publishable_TDQbmeAvpbJBHnrIeD3qyg_BHaoBpyb", "tabla": "app_fichas"}, "logoCabecera": "brand/logo-informe.png"};
 /*BRAND_END*/
 function applyBrand(){
  const B=BRAND, el=id=>document.getElementById(id);
@@ -1119,7 +1120,7 @@ async function guardar(){
  if(coll){
   try{await coll.doc(currentId).set(d);ok=true;}catch(e){err=(e&&e.code)||"";}
  } else if(sbUser){
-  try{const r=await sbc.from("fichas").upsert({user_id:sbUser.id,id:currentId,nombre:d.nombre,data:d,updated_at:new Date().toISOString()},{onConflict:"user_id,id"});
+  try{const r=await sbc.from(SBT()).upsert({user_id:sbUser.id,id:currentId,nombre:d.nombre,data:d,updated_at:new Date().toISOString()},{onConflict:"user_id,id"});
    if(r.error) throw r.error; ok=true;
    fichas=fichas.filter(x=>x.id!==currentId); fichas.unshift(Object.assign({id:currentId},d)); drawFichas();
   }catch(e){err="nube";}
@@ -1158,7 +1159,7 @@ function drawEditing(nombre){
 async function borrar(id){
  try{
   if(coll) await coll.doc(id).delete();
-  else if(sbUser){const r=await sbc.from("fichas").delete().eq("id",id); if(r.error) throw r.error; fichas=fichas.filter(x=>x.id!==id);}
+  else if(sbUser){const r=await sbc.from(SBT()).delete().eq("id",id); if(r.error) throw r.error; fichas=fichas.filter(x=>x.id!==id);}
   else{const a=lsRead().filter(x=>x.id!==id);lsWrite(a);fichas=a;}
   if(currentId===id){currentId=null;editMode=false;drawEditing();}
   confirmDel=null; drawFichas(); toast("Ficha borrada");
@@ -1237,6 +1238,7 @@ document.querySelectorAll('input[name=sistema]').forEach(r=>r.addEventListener("
 
 /* ===== Cuenta en la nube (Supabase), solo en la versión web publicada ===== */
 let sbc=null, sbUser=null, recuperando=false;
+const SBT=()=>(BRAND.supabase&&BRAND.supabase.tabla)||"fichas";
 function cuentaMsg(t,bad){const m=document.getElementById("cuentaMsg"); if(m){m.textContent=t;m.style.color=bad?"var(--warn)":"var(--ok)";}}
 function drawCuenta(){
  const el=$("cuenta"); if(!sbc){el.hidden=true;return;} el.hidden=false;
@@ -1254,7 +1256,7 @@ function drawCuenta(){
  }
 }
 async function sbLoad(){
- const r=await sbc.from("fichas").select("id,data,updated_at").order("updated_at",{ascending:false});
+ const r=await sbc.from(SBT()).select("id,data,updated_at").order("updated_at",{ascending:false});
  if(r.error){cuentaMsg("No se pudieron traer tus fichas. Revisá tu conexión.",true);return;}
  fichas=r.data.map(x=>Object.assign({id:x.id},x.data)); drawFichas(); drawCuenta();
 }
@@ -1293,7 +1295,7 @@ $("cuenta").addEventListener("click",async e=>{
   else if(a==="salir"){ await sbc.auth.signOut(); toast("Sesión cerrada"); }
   else if(a==="subir"){ const loc=lsRead().filter(l=>!fichas.some(f=>f.id===l.id));
    const rows=loc.map(l=>{const d=Object.assign({},l);delete d.id;return {user_id:sbUser.id,id:l.id,nombre:d.nombre||"",data:d,updated_at:d.fecha||new Date().toISOString()};});
-   const r=await sbc.from("fichas").upsert(rows,{onConflict:"user_id,id"}); if(r.error) cuentaMsg("No se pudieron subir. Probá de nuevo.",true); else {await sbLoad(); toast(rows.length+" fichas subidas a tu cuenta");} }
+   const r=await sbc.from(SBT()).upsert(rows,{onConflict:"user_id,id"}); if(r.error) cuentaMsg("No se pudieron subir. Probá de nuevo.",true); else {await sbLoad(); toast(rows.length+" fichas subidas a tu cuenta");} }
  } finally { b.disabled=false; }
 });
 
